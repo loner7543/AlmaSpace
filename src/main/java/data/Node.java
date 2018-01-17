@@ -29,24 +29,31 @@ public class Node {
     }
 
     @Override
-    public boolean equals(Object obj) {// for distinct
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
-        Node node = (Node) obj;
-        return (element != null && element.equals(node.element));
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Элемент  ").append(this.element).append("\n").append("Позиция  ").append(position);
+        return stringBuilder.toString();
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (element == null ? 0 : element) + (position == null ? 0 : position);
-        return result;
-    }
+    //    @Override
+//    public boolean equals(Object obj) {// for distinct
+//        if (obj == this) {
+//            return true;
+//        }
+//        if (obj == null || obj.getClass() != this.getClass()) {
+//            return false;
+//        }
+//        Node node = (Node) obj;
+//        return (element != null && element.equals(node.element));
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        final int prime = 31;
+//        int result = 1;
+//        result = prime * result + (element == null ? 0 : element) + (position == null ? 0 : position);
+//        return result;
+//    }
 }
 
 
