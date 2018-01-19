@@ -4,6 +4,7 @@ import service.CommandService;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
 
@@ -77,8 +78,11 @@ public class Main {
                             System.exit(0);
                             break;
                         }
-                        case 6:{ commandService.deleteRange(nodes,2,4);
-                            commandService.printList(nodes,' ');
+                        case 6:{
+                            commandService.sortAsc(nodes);
+                            Collections.reverse(nodes);
+                            commandService.printList(nodes,'\n');
+
                         }
                         default: {
 
