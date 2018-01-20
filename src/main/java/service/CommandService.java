@@ -1,27 +1,148 @@
 package service;
 
 import data.Node;
+import org.omg.PortableInterceptor.INACTIVE;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandService {
-    public void parseCommand(String input){
+    private List<Node> allElements;
+
+    public CommandService() {
+        this.allElements = new ArrayList<>(0);
+    }
+
+    public List<Node> getAllElements() {
+        return allElements;
+    }
+
+    public void setAllElements(List<Node> allElements) {
+        this.allElements = allElements;
+    }
+
+    public String parseCommand(String input){
+//        Pattern pattern = Pattern.compile("^\\[a-z\\]{3,6}( \\[0-9;\\]{1})?(\\[0-9\\]{0,1})?([0-9a-z]{0,1})?([0-9]{0,2})?$");
+//        Matcher matcher = pattern.matcher(input);
+//        if (matcher.find()){
+//            System.out.println("Valid command");
+//        }
+//        else {
+//            System.out.println("bad");
+//        }
+        String s = input;
+        String[] commandElements;
+        String returnMessage=null;
+        if (input.contains("\\t")||input.contains("\\s")){
+            input=input.replace("\\t"," ");
+            input = input.replace("\\s"," ");
+            commandElements = input.split(" ");
+        }
+        else {
+            commandElements = input.split(" ");
+        }
+        switch (commandElements[0]){
+            case "add":{
+                if (commandElements.length==1){
+                    returnMessage="Не задан аргумент команды";
+                }
+                else {
+                    if (addElement(allElements,Integer.parseInt(commandElements[1]))){
+                        returnMessage="Элемент добавлен";
+                    }
+                    else returnMessage="Не удалось добавить элемент";
+                }
+                break;
+            }
+            case "list":{
+                //char separator = s.replace("list","");
+                String output = this.printList(allElements,null);
+                StringBuffer stringBuffer = new StringBuffer();
+                stringBuffer.append(output).append("\n").append("Команда выполнена");
+                returnMessage = stringBuffer.toString();
+                break;
+            }
+            case "clear":{
+                allElements.clear();
+                return "Все элементы удалены";
+            }
+            case "del":{
+                if (commandElements.length>3){
+                    returnMessage="Команда имеет недоп. формат";
+                }
+                else if (commandElements.length==2){
+                    this.deleteElementByIndex(Integer.parseInt(commandElements[1]),allElements);
+                    returnMessage="Элемент удален";
+                }
+                else{
+                    int startIndex = Integer.parseInt(commandElements[1]);
+                    int endIndex = Integer.parseInt(commandElements[2]);
+                    deleteRange(allElements,startIndex,endIndex);
+                    returnMessage="Элементы удалены";
+                }
+                break;
+            }
+            case "find":{
+                returnMessage=findValue(allElements,Integer.parseInt(commandElements[1]));
+                break;
+            }
+            case "set":{
+                int index=Integer.parseInt(commandElements[1]);
+                int value = Integer.parseInt(commandElements[2]);
+                if (commandElements.length<3){
+                    returnMessage="Команда имеет недоп. формат";
+                }
+                else returnMessage=setElement(allElements,value,index);
+                break;
+            }
+            case "get":{
+                int pos = Integer.parseInt(commandElements[1]);
+                Node node = getElementAtPosition(allElements,pos);
+                if (node==null){
+
+                }
+                break;
+            }
+            case "sort":{
+                break;
+            }
+            case "unique":{
+                break;
+            }
+            case "save":{
+                break;
+            }
+            case "load":{
+                break;
+            }
+            case "count":{
+                break;
+            }
+            default:{
+                returnMessage="Неизвестная команда";
+            }
+        }
+        return returnMessage;
 
     }
 
-    public void printList(List<Node> source, char separator){
-        if(separator=='\u0000'){
-            separator='\t';
+    public String printList(List<Node> source, String separator){
+        StringBuilder stringBuilder =  new StringBuilder();
+        if(separator==null){
+            separator="\t";
         }
         for (Node node:source){
-            System.out.println("Элемент со значением "+node.getElement()+" находится на позиции "+node.getPosition());
-            System.out.println(separator);
+            stringBuilder.append("Элемент со значением "+node.getElement()+" находится на позиции "+node.getPosition())
+                    .append(separator);
         }
+        return stringBuilder.toString();
 }
     /*
     * Сортирует по возрастанию
@@ -67,36 +188,49 @@ public class CommandService {
         return updatePosition(uniqueElemnts);
     }
 
-    public Node findValue(List<Node> nodeList,int value){
+    public String findValue(List<Node> nodeList,int value){
+        String result=null;
         Predicate<Node> findPred = node -> node.getElement()==value;
         Node node = nodeList.stream().filter(findPred).findFirst().get();
-        return node;
+        if (node!=null){
+            result="Значение  "+node.getElement()+"  найдено в позиции  "+node.getPosition();
+        }
+        else result ="Значение  "+node.getElement()+"  не найдено";
+        return result;
     }
 
-    public List<Node> setElement(List<Node> nodeList,int element,int position){
+    public String setElement(List<Node> nodeList,int element,int position){
         for (Node node:nodeList){
             if (node.getPosition()==position){
                 node.setElement(element);
             }
         }
-        return nodeList;
+        return "Значение установлено";
     }
 
     public Node getElementAtPosition(List<Node> list, int position){
-        List<Node> result = list.stream().filter(node -> node.getPosition()==position).collect(Collectors.toList());
-        return result.get(0);
+        Node elem;
+        try{
+            List<Node> result = list.stream().filter(node -> node.getPosition()==position).collect(Collectors.toList());
+            elem=result.get(0);
+        }
+        catch (IndexOutOfBoundsException e){
+            elem=null;
+        }
+
+        return elem;
     }
 
     public long getElementCount(List<Node> list){
         return list.stream().count();
     }
 
-    public List<Node> deleteRange(List<Node> nodeList,int startidx,int endidx){
+    public void deleteRange(List<Node> nodeList,int startidx,int endidx){
         nodeList.subList(startidx,endidx).clear();
-        return deleteElementByIndex(endidx,nodeList);
+        deleteElementByIndex(endidx,nodeList);
     }
 
-    public List<Node> deleteElementByIndex(int index,List<Node> nodeList){
+    public void deleteElementByIndex(int index,List<Node> nodeList){
         Node removed = null;
         for (Node node:nodeList){
             if(node.getPosition()==index){
@@ -104,7 +238,7 @@ public class CommandService {
             }
         }
         nodeList.remove(removed);
-        return  updatePosition(nodeList);
+        updatePosition(nodeList);
     }
 
     public List<Node> updatePosition(List<Node> list){
@@ -118,12 +252,12 @@ public class CommandService {
         return nodeList;
     }
 
-    public void addElement(List<Node> nodeList,int value){//+
+    public boolean addElement(List<Node> nodeList,int value){//+
         Node node;
         if (nodeList.size()==0){
             node = new Node(value,0);
         }
         else node = new Node(value,nodeList.size());
-        nodeList.add(node);
+        return nodeList.add(node);
     }
 }

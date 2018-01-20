@@ -47,15 +47,15 @@ public class Main {
                             }
                             reader.close();
                             System.out.println(Constants.SET_LOADED);
-                            commandService.printList(nodes,'\n');
+                            //commandService.printList(nodes,'\n');
                             break;
                         }
                         case 2: {
                             System.out.println(Constants.WELCOME_MESSAGE);
                             String input = bufferedReader.readLine().trim().toLowerCase();
-                            String[] f = input.split(" ");
-                            commandService.addElement(nodes,Integer.parseInt(f[1]));
-                            commandService.printList(nodes,'\t');
+                            String result = commandService.parseCommand(input);
+                            System.out.println(result);
+                           // commandService.printList(commandService.getAllElements(),null);
                             break;
                         }
                         case 3: {
@@ -81,7 +81,7 @@ public class Main {
                         case 6:{
                             commandService.sortAsc(nodes);
                             Collections.reverse(nodes);
-                            commandService.printList(nodes,'\n');
+                            commandService.printList(nodes,null);
 
                         }
                         default: {
