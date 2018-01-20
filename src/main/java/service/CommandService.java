@@ -1,16 +1,14 @@
 package service;
 
+import data.Constants;
 import data.Node;
-import org.omg.PortableInterceptor.INACTIVE;
 
-import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandService {
@@ -28,111 +26,6 @@ public class CommandService {
         this.allElements = allElements;
     }
 
-    public String parseCommand(String input){
-//        Pattern pattern = Pattern.compile("^\\[a-z\\]{3,6}( \\[0-9;\\]{1})?(\\[0-9\\]{0,1})?([0-9a-z]{0,1})?([0-9]{0,2})?$");
-//        Matcher matcher = pattern.matcher(input);
-//        if (matcher.find()){
-//            System.out.println("Valid command");
-//        }
-//        else {
-//            System.out.println("bad");
-//        }
-        String s = input;
-        String[] commandElements;
-        String returnMessage=null;
-        if (input.contains("\\t")||input.contains("\\s")){
-            input=input.replace("\\t"," ");
-            input = input.replace("\\s"," ");
-            commandElements = input.split(" ");
-        }
-        else {
-            commandElements = input.split(" ");
-        }
-        switch (commandElements[0]){
-            case "add":{
-                if (commandElements.length==1){
-                    returnMessage="Не задан аргумент команды";
-                }
-                else {
-                    if (addElement(allElements,Integer.parseInt(commandElements[1]))){
-                        returnMessage="Элемент добавлен";
-                    }
-                    else returnMessage="Не удалось добавить элемент";
-                }
-                break;
-            }
-            case "list":{
-                //char separator = s.replace("list","");
-                String output = this.printList(allElements,null);
-                StringBuffer stringBuffer = new StringBuffer();
-                stringBuffer.append(output).append("\n").append("Команда выполнена");
-                returnMessage = stringBuffer.toString();
-                break;
-            }
-            case "clear":{
-                allElements.clear();
-                return "Все элементы удалены";
-            }
-            case "del":{
-                if (commandElements.length>3){
-                    returnMessage="Команда имеет недоп. формат";
-                }
-                else if (commandElements.length==2){
-                    this.deleteElementByIndex(Integer.parseInt(commandElements[1]),allElements);
-                    returnMessage="Элемент удален";
-                }
-                else{
-                    int startIndex = Integer.parseInt(commandElements[1]);
-                    int endIndex = Integer.parseInt(commandElements[2]);
-                    deleteRange(allElements,startIndex,endIndex);
-                    returnMessage="Элементы удалены";
-                }
-                break;
-            }
-            case "find":{
-                returnMessage=findValue(allElements,Integer.parseInt(commandElements[1]));
-                break;
-            }
-            case "set":{
-                int index=Integer.parseInt(commandElements[1]);
-                int value = Integer.parseInt(commandElements[2]);
-                if (commandElements.length<3){
-                    returnMessage="Команда имеет недоп. формат";
-                }
-                else returnMessage=setElement(allElements,value,index);
-                break;
-            }
-            case "get":{
-                int pos = Integer.parseInt(commandElements[1]);
-                Node node = getElementAtPosition(allElements,pos);
-                if (node==null){
-
-                }
-                break;
-            }
-            case "sort":{
-                break;
-            }
-            case "unique":{
-                break;
-            }
-            case "save":{
-                break;
-            }
-            case "load":{
-                break;
-            }
-            case "count":{
-                break;
-            }
-            default:{
-                returnMessage="Неизвестная команда";
-            }
-        }
-        return returnMessage;
-
-    }
-
     public String printList(List<Node> source, String separator){
         StringBuilder stringBuilder =  new StringBuilder();
         if(separator==null){
@@ -147,12 +40,16 @@ public class CommandService {
     /*
     * Сортирует по возрастанию
     * */
-    public void sortAsc(List<Node> source){
+    public List<Node> sortAsc(List<Node> source){
         int startIndex = 0;
         int endIndex = source.size() - 1;
         doSort(startIndex, endIndex,source);
+        return source;
     }
 
+    /*
+    * Быстрая сортировка набора элементов
+    * */
     private  void doSort(int start, int end,List<Node> source) {
         if (start >= end)
             return;
@@ -179,15 +76,21 @@ public class CommandService {
                     cur = i;
             }
         }
-        doSort(start, cur,source);
-        doSort(cur+1, end,source);
+        doSort(start, cur,source);// выполнить для левого набора
+        doSort(cur+1, end,source);//для правого
     }
 
+    /*
+    * Удаляет дубликаты из набора элементов
+    */
     public List<Node> deleteDistinct(List<Node> nodeList){
         List<Node> uniqueElemnts = nodeList.stream().distinct().collect(Collectors.toList());
         return updatePosition(uniqueElemnts);
     }
 
+    /*
+    * Ищет элемент по индексу
+    * */
     public String findValue(List<Node> nodeList,int value){
         String result=null;
         Predicate<Node> findPred = node -> node.getElement()==value;
@@ -199,6 +102,9 @@ public class CommandService {
         return result;
     }
 
+    /*
+    * Устанавливает значение в указанной позиции
+    * */
     public String setElement(List<Node> nodeList,int element,int position){
         for (Node node:nodeList){
             if (node.getPosition()==position){
@@ -208,6 +114,9 @@ public class CommandService {
         return "Значение установлено";
     }
 
+    /*
+    * Читает значение в указанной позиции
+    * */
     public Node getElementAtPosition(List<Node> list, int position){
         Node elem;
         try{
@@ -225,11 +134,17 @@ public class CommandService {
         return list.stream().count();
     }
 
+    /*
+    * Удаляет элементы в заданном диапазоне
+    * */
     public void deleteRange(List<Node> nodeList,int startidx,int endidx){
         nodeList.subList(startidx,endidx).clear();
         deleteElementByIndex(endidx,nodeList);
     }
 
+    /*
+    * Удаляет элемент по индексу
+    * */
     public void deleteElementByIndex(int index,List<Node> nodeList){
         Node removed = null;
         for (Node node:nodeList){
@@ -241,6 +156,9 @@ public class CommandService {
         updatePosition(nodeList);
     }
 
+    /*
+    * Обновляет позиции
+    * */
     public List<Node> updatePosition(List<Node> list){
         List<Node> nodeList = new ArrayList<>(list.size());
         int i=0;
@@ -252,6 +170,9 @@ public class CommandService {
         return nodeList;
     }
 
+    /*
+    * Добавляет элемент в конец набора
+    * */
     public boolean addElement(List<Node> nodeList,int value){//+
         Node node;
         if (nodeList.size()==0){
@@ -259,5 +180,51 @@ public class CommandService {
         }
         else node = new Node(value,nodeList.size());
         return nodeList.add(node);
+    }
+
+    /*
+    * Сохранение элементов в файл
+    * */
+    public void saveElements(String path){
+//        path="D:\\Sbt\\src\\main\\resources\\1.txt";// todo fix!
+        PrintWriter file = null;
+        try {
+            file = new PrintWriter(path,"UTF-8");
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        for (Node node:allElements){
+            file.write(node.getElement()+" "+node.getPosition()+"\n");
+        }
+        file.close();
+        System.out.println(Constants.SET_SAVED);
+    }
+
+    /**
+    * Загрузка элементов из файла
+    * */
+    public void loadElements(String path){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(path));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String str;
+        try {
+            while ((str = reader.readLine()) != null){
+                String[] data = str.split(" ");
+                Node node = new Node(Integer.parseInt(data[0]),Integer.parseInt(data[1]));
+                allElements.add(node);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Constants.SET_LOADED);
     }
 }

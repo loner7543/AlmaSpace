@@ -35,6 +35,9 @@ public class Node {
         return stringBuilder.toString();
     }
 
+    /*
+    * Перелпределен для корректной работы stream.distinct()
+    * */
         @Override
     public boolean equals(Object obj) {// for distinct
         if (obj == this) {
@@ -47,6 +50,9 @@ public class Node {
         return (element != null && element.equals(node.element));
     }
 
+    /*
+    * Переопределен для корректной работы equals
+    * */
     @Override
     public int hashCode() {
         final int prime = 31;
