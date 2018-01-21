@@ -37,32 +37,22 @@ public Plugin(){}
         }
     }
 
-    public List<Node> bubbleSort(List<Node> list){
-        /*По очереди будем просматривать все подмножества
-      элементов массива (0 - последний, 1-последний,
-      2-последний,...)*/
-        for (int i = 0; i < list.size(); i++) {
-        /*Предполагаем, что первый элемент (в каждом
-           подмножестве элементов) является минимальным */
-            Node min = commandService.getElementAtPosition(list,i);
-            int min_i = i;
-        /*В оставшейся части подмножества ищем элемент,
-           который меньше предположенного минимума*/
-            for (int j = i+1; j < list.size(); j++) {
-                //Если находим, запоминаем его индекс
-                if (commandService.getElementAtPosition(list,j).getElement() < min.getElement()) {
-                    min = commandService.getElementAtPosition(list,j);
-                    min_i = j;
+  public void sort(List<Node> nodes) {
+        int[] arr = new int[nodes.size()];
+        for(int i = 0;i<nodes.size();i++){
+            arr[i]=nodes.get(i).getElement();
+        }
+        for (int i = arr.length - 1; i > 0; i--) {
+            for (int j = 0; j < i; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    int tmp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = tmp;
                 }
             }
-        /*Если нашелся элемент, меньший, чем на текущей позиции,
-          меняем их местами*/
-            if (i != min_i) {
-                Node tmp = commandService.getElementAtPosition(list,i);
-                commandService.setElement(list,commandService.getElementAtPosition(list,min_i).getElement(),i);
-                commandService.setElement(list,tmp.getElement(),min_i);
-            }
         }
-        return list;
-    }
-}
+        nodes.clear();
+        for (int i = 0;i<arr.length;i++){
+            nodes.add(new Node(arr[i],i));
+        }
+    }}

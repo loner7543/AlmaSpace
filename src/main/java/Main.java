@@ -28,7 +28,7 @@ public class Main {
         else {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
             while (true){
-                System.out.println("Выберите тип ввода:");
+                System.out.println("Выберите пункт меню:");
                 System.out.println("1- Ручной ввод");
                 System.out.println("2- Добавить плагин");
                 System.out.println("3- Выход");
@@ -49,12 +49,12 @@ public class Main {
                             System.out.println("Введите 2 для подключения плагина SAVE");
                             choice = Integer.parseInt(bufferedReader.readLine());
                             PluginManager pluginManager = new PluginManager(parser.getCommandService());
-                            String ret = pluginManager.compile(choice);
+                            Object ret = pluginManager.compile(choice);
                             if (ret!=null){
-                                System.out.println(ret);
+                                List<Node> nodes = (List<Node>) ret;
                             }
-                            else throw new PluginException("Ошибка при работе с плагинами");
-
+                            else System.out.println("Набор сохранен в HTML файл");
+//                            else throw new PluginException("Ошибка при работе с плагинами");
                             break;
                         }
                         case 3: {
@@ -71,8 +71,6 @@ public class Main {
                 }
                 catch (NumberFormatException e){
                     System.out.println("Ошибка ввода при выборе пункта меню");
-                } catch (PluginException e) {
-                    System.out.println(e.getMessage());
                 }
             }
         }

@@ -22,9 +22,9 @@ public class PluginManager {
     public PluginManager(CommandService commandService){
         this.service = commandService;
     }
-    public String compile(int type){
+    public Object compile(int type){
         System.out.println("Подгружаю плагин....");
-        String retMessage=null;
+        Object res = null;
         StringBuilder sb = new StringBuilder(64);
         sb.append("package testcompile;\n"+
                 "import data.Node;\n" +
@@ -54,7 +54,7 @@ public class PluginManager {
                 "            out.write(\"<html>\");\n" +
                 "            out.write(\"<h3>Элементы</h3>\");\n" +
                 "            for (Node node:nodes){\n" +
-                "                out.write(\"<p> Элемент  \"+node.getElement()+\"  позиия  \"+node.getPosition()+\"</p>\");\n" +
+                "                out.write(\"<p> Элемент  \"+node.getElement()+\"  позиця  \"+node.getPosition()+\"</p>\");\n" +
                 "                out.write(\"<br>\");\n" +
                 "            }\n" +
                 "            out.write(\"</html>\");\n" +
@@ -64,34 +64,25 @@ public class PluginManager {
                 "        }\n" +
                 "    }\n" +
                 "\n" +
-                "    public List<Node> bubbleSort(List<Node> list){\n" +
-                "        /*По очереди будем просматривать все подмножества\n" +
-                "      элементов массива (0 - последний, 1-последний,\n" +
-                "      2-последний,...)*/\n" +
-                "        for (int i = 0; i < list.size(); i++) {\n" +
-                "        /*Предполагаем, что первый элемент (в каждом\n" +
-                "           подмножестве элементов) является минимальным */\n" +
-                "            Node min = commandService.getElementAtPosition(list,i);\n" +
-                "            int min_i = i;\n" +
-                "        /*В оставшейся части подмножества ищем элемент,\n" +
-                "           который меньше предположенного минимума*/\n" +
-                "            for (int j = i+1; j < list.size(); j++) {\n" +
-                "                //Если находим, запоминаем его индекс\n" +
-                "                if (commandService.getElementAtPosition(list,j).getElement() < min.getElement()) {\n" +
-                "                    min = commandService.getElementAtPosition(list,j);\n" +
-                "                    min_i = j;\n" +
+                "  public void sort(List<Node> nodes) {\n" +
+                "        int[] arr = new int[nodes.size()];\n" +
+                "        for(int i = 0;i<nodes.size();i++){\n" +
+                "            arr[i]=nodes.get(i).getElement();\n" +
+                "        }\n" +
+                "        for (int i = arr.length - 1; i > 0; i--) {\n" +
+                "            for (int j = 0; j < i; j++) {\n" +
+                "                if (arr[j] > arr[j + 1]) {\n" +
+                "                    int tmp = arr[j];\n" +
+                "                    arr[j] = arr[j + 1];\n" +
+                "                    arr[j + 1] = tmp;\n" +
                 "                }\n" +
                 "            }\n" +
-                "        /*Если нашелся элемент, меньший, чем на текущей позиции,\n" +
-                "          меняем их местами*/\n" +
-                "            if (i != min_i) {\n" +
-                "                Node tmp = commandService.getElementAtPosition(list,i);\n" +
-                "                commandService.setElement(list,commandService.getElementAtPosition(list,min_i).getElement(),i);\n" +
-                "                commandService.setElement(list,tmp.getElement(),min_i);\n" +
-                "            }\n" +
                 "        }\n" +
-                "        return list;\n" +
-                "    }\n" +
+                "        nodes.clear();\n" +
+                "        for (int i = 0;i<arr.length;i++){\n" +
+                "            nodes.add(new Node(arr[i],i));\n" +
+                "        }\n"+
+                "    }"+
                 "}\n");
 
         File pluginJavaFile = new File("testcompile/Plugin.java");
@@ -127,16 +118,14 @@ public class PluginManager {
                     URLClassLoader classLoader = new URLClassLoader(new URL[]{new File("./").toURI().toURL()});
                     Class<?> loadedClass = classLoader.loadClass("testcompile.Plugin");
                     Object obj = loadedClass.newInstance();
-                    Object res;
                     if (type==1){
-                        Method sortMethod = loadedClass.getDeclaredMethod("bubbleSort",List.class);
-                        res= sortMethod.invoke(obj,service.getAllElements());
-                        retMessage="Набор отсортирован";
+                        Method sortMethod = loadedClass.getDeclaredMethod("sort",List.class);
+                        sortMethod.invoke(obj,service.getAllElements());
+                        res=service.getAllElements();
                     }
                     else {
                         Method saveMet = loadedClass.getDeclaredMethod("writeToHtml",List.class);
                         res =  saveMet.invoke(obj,service.getAllElements());
-                        retMessage="Набор сохранен";
                     }
 
 
@@ -153,6 +142,6 @@ public class PluginManager {
                 exp.printStackTrace();
             }
         }
-        return retMessage;
+        return res;
     }
 }
