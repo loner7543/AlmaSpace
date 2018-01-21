@@ -36,7 +36,7 @@ public class CommandService {
                     .append(separator);
         }
         return stringBuilder.toString();
-}
+    }
     /*
     * Сортирует по возрастанию
     * */
@@ -185,32 +185,41 @@ public class CommandService {
     /*
     * Сохранение элементов в файл
     * */
-    public void saveElements(String path){
-//        path="D:\\Sbt\\src\\main\\resources\\1.txt";// todo fix!
-        PrintWriter file = null;
+    public String saveElements(String path){
+        String res="";
         try {
-            file = new PrintWriter(path,"UTF-8");
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
+            // path="D:\\Sbt\\src\\main\\resources\\1.txt";// todo fix!
+            PrintWriter file = null;
+            try {
+                file = new PrintWriter(path,"UTF-8");
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            for (Node node:allElements){
+                file.write(node.getElement()+" "+node.getPosition()+"\n");
+            }
+            file.close();
+            System.out.println(Constants.SET_SAVED);
         }
-        for (Node node:allElements){
-            file.write(node.getElement()+" "+node.getPosition()+"\n");
+        catch (NullPointerException e){
+            res=null;
         }
-        file.close();
-        System.out.println(Constants.SET_SAVED);
+        return res;
     }
 
     /**
-    * Загрузка элементов из файла
-    * */
-    public void loadElements(String path){
+     * Загрузка элементов из файла
+     * */
+    public String loadElements(String path,String separator){
+        String res ="";
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(path));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            res=null;
         }
         String str;
+        allElements.clear();
         try {
             while ((str = reader.readLine()) != null){
                 String[] data = str.split(" ");
@@ -218,13 +227,14 @@ public class CommandService {
                 allElements.add(node);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            res=null;
         }
         try {
             reader.close();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            res=null;
         }
-        System.out.println(Constants.SET_LOADED);
+        return res;
     }
 }

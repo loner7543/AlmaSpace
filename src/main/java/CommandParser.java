@@ -1,5 +1,7 @@
+import data.Constants;
 import data.Node;
 import exceptions.ElementNotFoundException;
+import exceptions.FileActionException;
 import exceptions.InvalidCommandFormatException;
 import exceptions.UnknownCommandException;
 import service.CommandService;
@@ -61,7 +63,8 @@ public class CommandParser {
                 }
                 case "clear":{
                     commandService.getAllElements().clear();
-                    return "Все элементы удалены";
+                    returnMessage= "Все элементы удалены";
+                    break;
                 }
                 case "del":{
                     if (commandElements.length>3){
@@ -102,16 +105,22 @@ public class CommandParser {
                     }
                     break;
                 }
-                case "sort":{// todo переписать
-                    if (commandElements.length!=2){
-                        returnMessage="Команда имеет недоп. формат";
+                case "sort":{
+                    if (commandElements.length==1){
+                        commandService.sortAsc(commandService.getAllElements());
+                        returnMessage="Набор отсортирован по возрастанию";
                     }
                     else {
                         String order = commandElements[1];
-                        if (Objects.equals(order, "")){
+                        if (order.equals("asc")){
                             commandService.sortAsc(commandService.getAllElements());
+                            returnMessage="Набор отсортирован по возрастанию";
                         }
-                        else Collections.reverse(commandService.sortAsc(commandService.getAllElements()));
+                        else if (order.equals("desc")){
+                            Collections.reverse(commandService.sortAsc(commandService.getAllElements()));
+                            returnMessage="Набор отсортирован по убыванию";
+                        }
+                        else throw new InvalidCommandFormatException("Неверно указан параметр сортировки");
                     }
 
                     break;
@@ -123,18 +132,25 @@ public class CommandParser {
                 }
                 case "save":{
                     String path = commandElements[1];
-                    commandService.saveElements(path);
-                    returnMessage = "Сохранение выполнено";
+                    String message=commandService.saveElements(path);
+                    if (message.equals(null)){
+                        throw new FileActionException("Ошибка при сохранении набора");
+                    }
+                    returnMessage = Constants.SET_SAVED;
                     break;
                 }
                 case "load":{
-                    if (commandElements.length<2){
-
+                    if (commandElements.length>3){
+                        throw new InvalidCommandFormatException("Неверно указаны параетры команды load");
                     }
                     else {
                         String filePath = commandElements[1];
-                        commandService.loadElements(filePath);
-                        returnMessage = "Загрузка выполнена";
+                        String separator=commandElements[2];
+                        returnMessage = commandService.loadElements(filePath,separator);
+                        if (returnMessage.equals(null)){
+                            throw new FileActionException("Ошибка при загрузке файла");
+                        }
+                        else returnMessage= Constants.SET_SAVED;
                     }
                     break;
 
@@ -144,7 +160,7 @@ public class CommandParser {
                     break;
                 }
                 default:{
-                   throw new UnknownCommandException("Неизвестная команда");
+                    throw new UnknownCommandException("Неизвестная команда");
                 }
             }
         }
@@ -157,8 +173,10 @@ public class CommandParser {
         } catch (ElementNotFoundException e) {
             System.out.println(e.getMessage());
             returnMessage=null;
+        } catch (FileActionException e) {
+            System.out.println(e.getMessage());
+            returnMessage=null;
         }
-
         return returnMessage;
 
     }
