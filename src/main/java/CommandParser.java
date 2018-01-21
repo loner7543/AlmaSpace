@@ -19,6 +19,10 @@ public class CommandParser {
         commandService = new CommandService();
     }
 
+    public CommandService getCommandService() {
+        return commandService;
+    }
+
     public String parseCommand(String input){
 //        Pattern pattern = Pattern.compile("^\\[a-z\\]{3,6}( \\[0-9;\\]{1})?(\\[0-9\\]{0,1})?([0-9a-z]{0,1})?([0-9]{0,2})?$");
 //        Matcher matcher = pattern.matcher(input);
