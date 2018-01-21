@@ -1,5 +1,6 @@
 import data.Constants;
 import data.Node;
+import exceptions.PluginException;
 
 import javax.tools.*;
 import java.io.*;
@@ -8,8 +9,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
+// 813 комн
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -43,64 +45,16 @@ public class Main {
                             break;
                         }
                         case 2: {
-                            System.out.printf("Подгружаю плагин....");
-                            System.out.printf(System.getProperty("user.dir"));
-                            String fullName = System.getProperty("user.dir")+"//src//main//resources//Plugin";//"d:/NetBeansProjects/Test/DynaCompTest2/outer/MyClass";
-
-                            // We get an instance of JavaCompiler. Then
-                            // we create a file manager
-                            // (our custom implementation of it)
-                            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-
-                            DiagnosticCollector<JavaFileObject> diagnostics
-                                    = new DiagnosticCollector<JavaFileObject>();
-                            StandardJavaFileManager fileManager
-                                    = compiler.getStandardFileManager(diagnostics, null, null);
-
-                            List<File> fileList = new ArrayList<File>();
-                            fileList.add(new File(fullName + ".java"));
-                            Iterable<? extends JavaFileObject> compilationUnits = fileManager
-                                    .getJavaFileObjectsFromFiles(fileList);
-
-                            // We specify a task to the compiler. Compiler should use our file
-                            // manager and our list of "files".
-                            // Then we run the compilation with call()
-                            JavaCompiler.CompilationTask task = compiler.getTask(
-                                    null, fileManager, null, null, null, compilationUnits);
-                            boolean result = task.call();
-                            if (result) {
-                                System.out.println("Compilation was successful");
-                            } else {
-                                System.out.println("Compilation failed");
+                            System.out.println("Введите 1 для подключения плагина SORT");
+                            System.out.println("Введите 2 для подключения плагина SAVE");
+                            choice = Integer.parseInt(bufferedReader.readLine());
+                            PluginManager pluginManager = new PluginManager(parser.getCommandService());
+                            String ret = pluginManager.compile(choice);
+                            if (ret!=null){
+                                System.out.println(ret);
                             }
+                            else throw new PluginException("Ошибка при работе с плагинами");
 
-                            URL url = new URL("file:///d:/NetBeansProjects/Test/DynaCompTest2/"
-                                    + "outer/");
-                            System.out.println("url = " + url);
-                            URL[] classUrls = { url };
-                            URLClassLoader ucl = new URLClassLoader(classUrls);
-                            Class c = ucl.loadClass("Plugin");
-
-                            Method staticMethod = c.getDeclaredMethod("writeToHtml");
-                            staticMethod.invoke(null);
-
-                            Object o = c.newInstance();
-                            Method instanceMethod = c.getDeclaredMethod("myInstanceMethod");
-                            instanceMethod.invoke(o);
-                            System.out.printf("Введите 1 для записи элементов в HTML-файл");
-                            System.out.printf("Введите 2 для применения другого алгоритма сортировки");
-                            choice=Integer.parseInt(bufferedReader.readLine());
-                            switch (choice){
-                                case 1:{
-                                    break;
-                                }
-                                case 2:{
-                                    break;
-                                }
-                            }
-//                            System.out.printf(System.getProperty("user.dir"));
-//                            Plugin plugin = new Plugin();
-//                            plugin.writeToHtml(parser.getCommandService().getAllElements());
                             break;
                         }
                         case 3: {
@@ -117,16 +71,8 @@ public class Main {
                 }
                 catch (NumberFormatException e){
                     System.out.println("Ошибка ввода при выборе пункта меню");
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                } catch (PluginException e) {
+                    System.out.println(e.getMessage());
                 }
             }
         }

@@ -1,0 +1,68 @@
+package testcompile;
+import data.Node;
+import exceptions.FileActionException;
+import service.CommandService;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+public class Plugin {
+    private CommandService commandService;
+
+public Plugin(){}
+    public Plugin(CommandService commandService) {
+        this.commandService = commandService;
+    }
+
+    public void writeToHtml(List<Node> nodes) throws FileActionException {
+        String path = System.getProperty("user.dir")+"//save.html";
+        File htmFile = new File(path);
+        FileWriter ostream = null;
+        try {
+            ostream = new FileWriter(htmFile);
+            BufferedWriter out = new BufferedWriter(ostream);
+            out.write("<html>");
+            out.write("<h3>Элементы</h3>");
+            for (Node node:nodes){
+                out.write("<p> Элемент  "+node.getElement()+"  позиия  "+node.getPosition()+"</p>");
+                out.write("<br>");
+            }
+            out.write("</html>");
+            out.close();
+        } catch (IOException e) {
+           throw new FileActionException("Ошибка записи в HTML - файл");
+        }
+    }
+
+    public List<Node> bubbleSort(List<Node> list){
+        /*По очереди будем просматривать все подмножества
+      элементов массива (0 - последний, 1-последний,
+      2-последний,...)*/
+        for (int i = 0; i < list.size(); i++) {
+        /*Предполагаем, что первый элемент (в каждом
+           подмножестве элементов) является минимальным */
+            Node min = commandService.getElementAtPosition(list,i);
+            int min_i = i;
+        /*В оставшейся части подмножества ищем элемент,
+           который меньше предположенного минимума*/
+            for (int j = i+1; j < list.size(); j++) {
+                //Если находим, запоминаем его индекс
+                if (commandService.getElementAtPosition(list,j).getElement() < min.getElement()) {
+                    min = commandService.getElementAtPosition(list,j);
+                    min_i = j;
+                }
+            }
+        /*Если нашелся элемент, меньший, чем на текущей позиции,
+          меняем их местами*/
+            if (i != min_i) {
+                Node tmp = commandService.getElementAtPosition(list,i);
+                commandService.setElement(list,commandService.getElementAtPosition(list,min_i).getElement(),i);
+                commandService.setElement(list,tmp.getElement(),min_i);
+            }
+        }
+        return list;
+    }
+}
