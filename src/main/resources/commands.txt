@@ -1,0 +1,6 @@
+add 1
+add 5
+get wwee
+get 1
+set frffrfr
+add 1

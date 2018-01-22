@@ -20,10 +20,12 @@ public class Main {
             BufferedReader reader = new BufferedReader(new FileReader(args[0]));
             String str;
             while ((str = reader.readLine()) != null){
-                parser.parseCommand(str);// todo парсит команды
+                String res = parser.parseCommand(str,true);
+                if (str!=null){
+                    System.out.println(res);
+                }
+                else  System.exit(0);
             }
-            // Выполнить команды из предложенного файла
-            System.exit(0);
         }
         else {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
@@ -38,7 +40,7 @@ public class Main {
                         case 1: {
                             System.out.println(Constants.WELCOME_MESSAGE);
                             String input = bufferedReader.readLine().trim().toLowerCase();
-                            String result = parser.parseCommand(input);
+                            String result = parser.parseCommand(input,false);
                             if (result!=null){
                                 System.out.println(result);
                             }

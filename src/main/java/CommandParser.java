@@ -22,7 +22,7 @@ public class CommandParser {
         return commandService;
     }
 
-    public String parseCommand(String input){
+    public String parseCommand(String input,boolean isFile){
 //        Pattern pattern = Pattern.compile("^\\[a-z\\]{3,6}( \\[0-9;\\]{1})?(\\[0-9\\]{0,1})?([0-9a-z]{0,1})?([0-9]{0,2})?$");
 //        Matcher matcher = pattern.matcher(input);
 //        if (matcher.find()){
@@ -226,17 +226,28 @@ public class CommandParser {
         catch (UnknownCommandException e){
             System.out.println(e.getMessage());
             returnMessage=null;
+            if (isFile){
+                System.exit(1);
+            }
         } catch (InvalidCommandFormatException e) {
             System.out.println(e.getMessage());
             returnMessage=null;
+            if (isFile){
+                System.exit(1);
+            }
         } catch (ElementNotFoundException e) {
             System.out.println(e.getMessage());
             returnMessage=null;
+            if (isFile){
+                System.exit(1);
+            }
         } catch (FileActionException e) {
             System.out.println(e.getMessage());
             returnMessage=null;
+            if (isFile){
+                System.exit(1);
+            }
         }
         return returnMessage;
-
     }
 }
