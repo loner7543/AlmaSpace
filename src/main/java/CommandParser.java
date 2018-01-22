@@ -49,16 +49,34 @@ public class CommandParser {
                         throw new InvalidCommandFormatException("Не задан аргумент команды");
                     }
                     else {
-                        if (commandService.addElement(commandService.getAllElements(),Integer.parseInt(commandElements[1]))){
-                            returnMessage="Элемент добавлен";
+                        try{
+                            if (commandService.addElement(commandService.getAllElements(),Integer.parseInt(commandElements[1]))){
+                                returnMessage="Элемент добавлен";
+                            }
+                            else returnMessage="Не удалось добавить элемент";
                         }
-                        else returnMessage="Не удалось добавить элемент";
+                        catch (NumberFormatException e){
+                            throw new InvalidCommandFormatException("Аргументом команды add должно быть число");
+                        }
+
                     }
                     break;
                 }
                 case "list":{
-                    //char separator = s.replace("list","");
-                    String output = commandService.printList(commandService.getAllElements(),null);
+                    String sep;
+                    try{
+                        if (commandElements.length>2){
+                            throw new InvalidCommandFormatException("Неверный формат команды list");
+                        }
+                        else {
+                            sep=commandElements[1];
+                        }
+                    }
+                    catch (ArrayIndexOutOfBoundsException e){
+                        sep=null;
+                    }
+
+                    String output = commandService.printList(commandService.getAllElements(),sep);
                     StringBuffer stringBuffer = new StringBuffer();
                     stringBuffer.append(output).append("\n").append("Команда выполнена");
                     returnMessage = stringBuffer.toString();
@@ -71,41 +89,71 @@ public class CommandParser {
                 }
                 case "del":{
                     if (commandElements.length>3){
-                        throw new InvalidCommandFormatException("Команда имеет недоп. формат");
+                        throw new InvalidCommandFormatException("Команда имеет недопустимый формат");
                     }
                     else if (commandElements.length==2){
-                        commandService.deleteElementByIndex(Integer.parseInt(commandElements[1]),commandService.getAllElements());
-                        returnMessage="Элемент удален";
+                        try{
+                            commandService.deleteElementByIndex(Integer.parseInt(commandElements[1]),commandService.getAllElements());
+                            returnMessage="Элемент удален";
+                        }
+                        catch (NumberFormatException e){
+                            throw new InvalidCommandFormatException("Аргуменом команды должно быть число");
+                        }
+
                     }
                     else{
-                        int startIndex = Integer.parseInt(commandElements[1]);
-                        int endIndex = Integer.parseInt(commandElements[2]);
-                        commandService.deleteRange(commandService.getAllElements(),startIndex,endIndex);
-                        returnMessage="Элементы удалены";
+                        try{
+                            int startIndex = Integer.parseInt(commandElements[1]);
+                            int endIndex = Integer.parseInt(commandElements[2]);
+                            commandService.deleteRange(commandService.getAllElements(),startIndex,endIndex);
+                            returnMessage="Элементы удалены";
+                        }
+                        catch (NumberFormatException e){
+                            throw new InvalidCommandFormatException("Аргуменом команды должны быть числа");
+                        }
                     }
                     break;
                 }
                 case "find":{
-                    returnMessage=commandService.findValue(commandService.getAllElements(),Integer.parseInt(commandElements[1]));
+                    try {
+                        returnMessage=commandService.findValue(commandService.getAllElements(),Integer.parseInt(commandElements[1]));
+                    }
+                    catch (NumberFormatException e){
+                        throw new InvalidCommandFormatException("Параметром команды find должно быть число");
+                    }
+
                     break;
                 }
                 case "set":{
                     if (commandElements.length<3){
                         throw new InvalidCommandFormatException("Команда имеет недопустимый формат");
                     }
+
                     else {
-                        int index=Integer.parseInt(commandElements[1]);
-                        int value = Integer.parseInt(commandElements[2]);
-                        returnMessage=commandService.setElement(commandService.getAllElements(),value,index);
+                        try {
+                            int index=Integer.parseInt(commandElements[1]);
+                            int value = Integer.parseInt(commandElements[2]);
+                            returnMessage=commandService.setElement(commandService.getAllElements(),value,index);
+                        }
+                        catch (NumberFormatException e){
+                            throw new InvalidCommandFormatException("Позиция и элемент должны быть числами");
+                        }
                     }
                     break;
                 }
                 case "get":{
-                    int pos = Integer.parseInt(commandElements[1]);
+                    int pos=0;
+                    try {
+                        pos = Integer.parseInt(commandElements[1]);
+                    }
+                    catch (NumberFormatException e){
+                        throw new InvalidCommandFormatException("Позиция должна быть числом!");
+                    }
                     Node node = commandService.getElementAtPosition(commandService.getAllElements(),pos);
                     if (node==null){
                         throw new ElementNotFoundException(pos,"Элемент на позиции  "+pos+"  не найден");
                     }
+                    returnMessage = "Найден элемент со значением  "+node.getElement();
                     break;
                 }
                 case "sort":{
@@ -134,8 +182,16 @@ public class CommandParser {
                     break;
                 }
                 case "save":{
-                    String path = commandElements[1];
-                    String message=commandService.saveElements(path);
+                    String sep;
+                    String path;
+                    if (commandElements.length==1){
+                        throw new InvalidCommandFormatException("Не указано имя файла!");
+                    } else path = commandElements[1];
+                    if (commandElements.length==2){
+                        sep="\t";
+                    }else sep = commandElements[2];
+
+                    String message=commandService.saveElements(path,sep);
                     if (message.equals(null)){
                         throw new FileActionException("Ошибка при сохранении набора");
                     }

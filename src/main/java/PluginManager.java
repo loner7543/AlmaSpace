@@ -1,3 +1,4 @@
+import exceptions.InvalidCommandFormatException;
 import service.CommandService;
 
 import javax.tools.*;
@@ -112,22 +113,28 @@ public class PluginManager {
                         = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(pluginJavaFile));
                 JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, optionList, null, compilationUnit);
                 if (task.call()) {
-                    System.out.println("Плагин подключен");
                     // Create a new custom class loader, pointing to the directory that contains the compiled
                     // classes, this should point to the top of the package structure!
                     URLClassLoader classLoader = new URLClassLoader(new URL[]{new File("./").toURI().toURL()});
                     Class<?> loadedClass = classLoader.loadClass("testcompile.Plugin");
                     Object obj = loadedClass.newInstance();
-                    if (type==1){
-                        Method sortMethod = loadedClass.getDeclaredMethod("sort",List.class);
-                        sortMethod.invoke(obj,service.getAllElements());
-                        res=service.getAllElements();
+                    switch (type){
+                        case 1:{
+                            Method sortMethod = loadedClass.getDeclaredMethod("sort",List.class);
+                            sortMethod.invoke(obj,service.getAllElements());
+                            res=service.getAllElements();
+                            break;
+                        }
+                        case 2:{
+                            Method saveMet = loadedClass.getDeclaredMethod("writeToHtml",List.class);
+                            res =  saveMet.invoke(obj,service.getAllElements());
+                            break;
+                        }
+                        default:{
+                            throw new InvalidCommandFormatException("Выбран неверный плагин!");
+                        }
                     }
-                    else {
-                        Method saveMet = loadedClass.getDeclaredMethod("writeToHtml",List.class);
-                        res =  saveMet.invoke(obj,service.getAllElements());
-                    }
-
+                    System.out.println("Плагин применен");
 
                 } else {
                     for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
@@ -140,6 +147,8 @@ public class PluginManager {
             } catch (IOException | ClassNotFoundException | InstantiationException |
                     IllegalAccessException | NoSuchMethodException | InvocationTargetException exp) {
                 exp.printStackTrace();
+            } catch (InvalidCommandFormatException e) {
+                System.out.println(e.getMessage());
             }
         }
         return res;

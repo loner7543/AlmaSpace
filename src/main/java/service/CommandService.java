@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CommandService {
     private List<Node> allElements;
@@ -28,12 +29,18 @@ public class CommandService {
 
     public String printList(List<Node> source, String separator){
         StringBuilder stringBuilder =  new StringBuilder();
+        Node lastElem = getLastElement(source);
         if(separator==null){
             separator="\t";
         }
         for (Node node:source){
-            stringBuilder.append("Элемент со значением "+node.getElement()+" находится на позиции "+node.getPosition())
-                    .append(separator);
+            if (node.getPosition()==lastElem.getPosition()){
+                stringBuilder.append("Элемент со значением "+node.getElement()+" находится на позиции "+node.getPosition());
+            }
+            else {
+                stringBuilder.append("Элемент со значением "+node.getElement()+" находится на позиции "+node.getPosition())
+                        .append(separator);
+            }
         }
         return stringBuilder.toString();
     }
@@ -69,7 +76,6 @@ public class CommandService {
 
                 getElementAtPosition(source,i).setElement(getElementAtPosition(source,j).getElement());
                 setElement(source,temp,j);
-                //array[j] = temp;
                 if (i == cur)
                     cur = j;
                 else if (j == cur)
@@ -185,8 +191,9 @@ public class CommandService {
     /*
     * Сохранение элементов в файл
     * */
-    public String saveElements(String path){
+    public String saveElements(String path,String sep){
         String res="";
+        Node lastElem = getLastElement(allElements);
         try {
             // path="D:\\Sbt\\src\\main\\resources\\1.txt";// todo fix!
             PrintWriter file = null;
@@ -196,7 +203,12 @@ public class CommandService {
                 e.printStackTrace();
             }
             for (Node node:allElements){
-                file.write(node.getElement()+" "+node.getPosition()+"\n");
+                if (node.getPosition()==lastElem.getPosition()){
+                    file.write(node.getElement()+" "+node.getPosition());// если эл-т последний
+                }
+                else {
+                    file.write(node.getElement()+" "+node.getPosition()+sep);
+                }
             }
             file.close();
             System.out.println(Constants.SET_SAVED);
@@ -236,5 +248,12 @@ public class CommandService {
             res=null;
         }
         return res;
+    }
+
+    public Node getLastElement(List<Node> nodeList){
+        long count = nodeList.stream().count();
+        Stream<Node> stream = nodeList.stream();
+        Node lastElem = stream.skip(count - 1).findFirst().get();
+        return lastElem;
     }
 }

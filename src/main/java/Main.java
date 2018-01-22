@@ -45,9 +45,16 @@ public class Main {
                             break;
                         }
                         case 2: {
-                            System.out.println("Введите 1 для подключения плагина SORT");
-                            System.out.println("Введите 2 для подключения плагина SAVE");
-                            choice = Integer.parseInt(bufferedReader.readLine());
+                            try {
+                                System.out.println("Введите 1 для подключения плагина SORT");
+                                System.out.println("Введите 2 для подключения плагина SAVE");
+                                choice = Integer.parseInt(bufferedReader.readLine());
+                            }
+                            catch (NumberFormatException e){
+                                System.out.println("Ошибка ввода при выборе пункта меню");
+                                return;
+                            }
+
                             PluginManager pluginManager = new PluginManager(parser.getCommandService());
                             Object ret = pluginManager.compile(choice);
                             if (ret!=null){
@@ -70,13 +77,9 @@ public class Main {
                     System.out.println(Constants.INPUT_ERROR);
                 }
                 catch (NumberFormatException e){
-                    System.out.println("Ошибка ввода при выборе пункта меню");
+                    System.out.println("Ошибка при выборе пункта меню!");
                 }
             }
         }
     }
 }
-//https://javatalks.ru/topics/32121
-//https://stokito.wordpress.com/2013/02/14/%D0%B4%D0%B8%D0%
-// BD%D0%B0%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D0%BA%D0%BE%D0%BC%D0%BF%D0%B8%D0%BB%D1%8F%D1%86%D0%B8%D1%8F-java/
-//https://stackoverflow.com/questions/21544446/how-do-you-dynamically-compile-and-load-external-java-classes

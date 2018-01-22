@@ -27,7 +27,7 @@ public Plugin(){}
             out.write("<html>");
             out.write("<h3>Элементы</h3>");
             for (Node node:nodes){
-                out.write("<p> Элемент  "+node.getElement()+"  позиия  "+node.getPosition()+"</p>");
+                out.write("<p> Элемент  "+node.getElement()+"  позиця  "+node.getPosition()+"</p>");
                 out.write("<br>");
             }
             out.write("</html>");
