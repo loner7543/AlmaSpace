@@ -250,10 +250,15 @@ public class CommandService {
         return res;
     }
 
-    public Node getLastElement(List<Node> nodeList){
-        long count = nodeList.stream().count();
-        Stream<Node> stream = nodeList.stream();
-        Node lastElem = stream.skip(count - 1).findFirst().get();
-        return lastElem;
+    public Node getLastElement(List<Node> nodeList){// todo. если элемент 1 в списке - верни его
+        if (nodeList.size()==1){
+            return nodeList.get(0);
+        }
+        else {
+            long count = nodeList.stream().count();
+            Stream<Node> stream = nodeList.stream();
+            Node lastElem = stream.skip(count - 1).findFirst().get();
+            return lastElem;
+        }
     }
 }

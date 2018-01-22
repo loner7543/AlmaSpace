@@ -85,3 +85,4 @@ public class Main {
         }
     }
 }
+//home/alma/bank/AlmaSpace/1/s2.txt

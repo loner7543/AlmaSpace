@@ -6,6 +6,7 @@ import exceptions.InvalidCommandFormatException;
 import exceptions.UnknownCommandException;
 import service.CommandService;
 
+import java.io.File;
 import java.util.Collections;
 
 /*
@@ -199,17 +200,31 @@ public class CommandParser {
                     break;
                 }
                 case "load":{
+                    String path;
+                    String sep;
                     if (commandElements.length>3){
                         throw new InvalidCommandFormatException("Неверно указаны параетры команды load");
                     }
                     else {
-                        String filePath = commandElements[1];
-                        String separator=commandElements[2];
-                        returnMessage = commandService.loadElements(filePath,separator);
+                        if (commandElements.length==1){
+                            throw new InvalidCommandFormatException("Не указано имя файла!");
+                        }
+                        else if (commandElements.length==2){
+                            path = commandElements[1];
+                            path = parsePath(path);
+                            sep="\t";
+                        }
+                        else {
+                            path = commandElements[1];
+                            sep=commandElements[2];
+                            path = parsePath(path);
+                        }
+
+                        returnMessage = commandService.loadElements(path,sep);
                         if (returnMessage.equals(null)){
                             throw new FileActionException("Ошибка при загрузке файла");
                         }
-                        else returnMessage= Constants.SET_SAVED;
+                        else returnMessage= Constants.SET_LOADED;
                     }
                     break;
 
@@ -249,5 +264,13 @@ public class CommandParser {
             }
         }
         return returnMessage;
+    }
+
+    public String parsePath(String raw){
+        String pathSeparator = File.pathSeparator;
+        String path = raw.replace("\\s"," ");
+        //path=path.replace("\\\\", "\\"); - on windows
+        path=path.replace("\\", pathSeparator); //- unix
+        return path;
     }
 }
