@@ -1,5 +1,8 @@
 package data;
 
+/*
+* Сообщения
+* */
 public final class Constants {
     public static final String WELCOME_MESSAGE="Введите команду";
     public static final String ENTER_FILENAME="Введите путь к файлу";

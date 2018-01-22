@@ -8,6 +8,7 @@ import service.CommandService;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 
 /*
 * Поизводит разбор входнойстроки, валидацию и вызор методов обработки
@@ -134,7 +135,11 @@ public class CommandParser {
                         try {
                             int index=Integer.parseInt(commandElements[1]);
                             int value = Integer.parseInt(commandElements[2]);
-                            returnMessage=commandService.setElement(commandService.getAllElements(),value,index);
+                            String val = commandService.setElement(commandService.getAllElements(),value,index);
+                            if (val!=null){
+                                returnMessage=val;
+                            }
+                            else returnMessage="Не найден элемент с позицией "+index;
                         }
                         catch (NumberFormatException e){
                             throw new InvalidCommandFormatException("Позиция и элемент должны быть числами");
@@ -178,21 +183,26 @@ public class CommandParser {
                     break;
                 }
                 case "unique":{
-                    commandService.deleteDistinct(commandService.getAllElements());
-                    returnMessage="Дубликаты удалены";
+                  List<Node> unique =  commandService.deleteDistinct(commandService.getAllElements());
+                  commandService.setAllElements(unique);
+                    returnMessage="Дубликаты удалены:";
                     break;
                 }
                 case "save":{
                     String sep;
                     String path;
-                    String savePath=s.split(" ")[1];
-                    if (commandElements.length==1){
-                        throw new InvalidCommandFormatException("Не указано имя файла!");
-                    } else path = parsePath(savePath);//commandElements[1];
-                    if (commandElements.length==2){
+                    String[] elems = s.split(" ");
+                    if (elems.length>3){
+                        throw new InvalidCommandFormatException("Неверный формат команды!");
+                    }
+                    else if(elems.length==2){
+                        path=parsePath(elems[1]);
                         sep="\t";
-                    }else sep = commandElements[2];
-
+                    }
+                    else {
+                        path=elems[1];
+                        sep = parsePath(elems[2]);
+                    }
                     String message=commandService.saveElements(path,sep);
                     if (message.equals(null)){
                         throw new FileActionException("Ошибка при сохранении набора");
@@ -216,7 +226,7 @@ public class CommandParser {
                             sep="\t";
                         }
                         else {
-                            sep=commandElements[2];
+                            sep=s.split(" ")[1];
                             path = parsePath(loadPath);
                         }
 

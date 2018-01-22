@@ -100,11 +100,11 @@ public class CommandService {
     public String findValue(List<Node> nodeList,int value){
         String result=null;
         Predicate<Node> findPred = node -> node.getElement()==value;
-        Node node = nodeList.stream().filter(findPred).findFirst().get();
+        Node node = nodeList.stream().filter(findPred).findFirst().orElse(null);
         if (node!=null){
             result="Значение  "+node.getElement()+"  найдено в позиции  "+node.getPosition();
         }
-        else result ="Значение  "+node.getElement()+"  не найдено";
+        else result ="Значение  "+value+"  не найдено";
         return result;
     }
 
@@ -115,9 +115,10 @@ public class CommandService {
         for (Node node:nodeList){
             if (node.getPosition()==position){
                 node.setElement(element);
+                return "Значение установлено";
             }
         }
-        return "Значение установлено";
+        return null;
     }
 
     /*
@@ -146,6 +147,7 @@ public class CommandService {
     public void deleteRange(List<Node> nodeList,int startidx,int endidx){
         nodeList.subList(startidx,endidx).clear();
         deleteElementByIndex(endidx,nodeList);
+        updatePosition(nodeList);
     }
 
     /*
@@ -199,14 +201,14 @@ public class CommandService {
             try {
                 file = new PrintWriter(path,"UTF-8");
             } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
             for (Node node:allElements){
                 if (node.getPosition()==lastElem.getPosition()){
                     file.write(node.getElement()+" "+node.getPosition());// если эл-т последний
                 }
                 else {
-                    file.write(node.getElement()+" "+node.getPosition());
+                    file.write(node.getElement()+" "+node.getPosition()+sep);
                     //file.write(sep);
                 }
             }
@@ -234,9 +236,12 @@ public class CommandService {
         allElements.clear();
         try {
             while ((str = reader.readLine()) != null){
-                String[] data = str.split(" ");
-                Node node = new Node(Integer.parseInt(data[0]),Integer.parseInt(data[1]));
-                allElements.add(node);
+                String[] data = str.split(separator);
+                for (int i = 0;i<data.length;i++){
+                    String[] elemAndPos = data[i].split(" ");
+                    Node node = new Node(Integer.parseInt(elemAndPos[0]),Integer.parseInt(elemAndPos[1]));
+                    allElements.add(node);
+                }
             }
         } catch (IOException e) {
             res=null;
@@ -251,15 +256,23 @@ public class CommandService {
         return res;
     }
 
-    public Node getLastElement(List<Node> nodeList){// todo. если элемент 1 в списке - верни его
-        if (nodeList.size()==1){
-            return nodeList.get(0);
+    public Node getLastElement(List<Node> nodeList){
+        Node lastElem = null;
+        try{
+            if (nodeList.size()==1){
+                return nodeList.get(0);
+            }
+            else {
+                long count = nodeList.stream().count();
+                Stream<Node> stream = nodeList.stream();
+                lastElem  = stream.skip(count - 1).findFirst().get();
+            }
         }
-        else {
-            long count = nodeList.stream().count();
-            Stream<Node> stream = nodeList.stream();
-            Node lastElem = stream.skip(count - 1).findFirst().get();
-            return lastElem;
+        catch (IllegalArgumentException e){
+            System.out.println("Набор пуст!");
+
         }
+        return lastElem;
+
     }
 }
