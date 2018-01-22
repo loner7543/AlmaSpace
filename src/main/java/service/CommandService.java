@@ -195,7 +195,6 @@ public class CommandService {
         String res="";
         Node lastElem = getLastElement(allElements);
         try {
-            // path="D:\\Sbt\\src\\main\\resources\\1.txt";// todo fix!
             PrintWriter file = null;
             try {
                 file = new PrintWriter(path,"UTF-8");
@@ -207,7 +206,8 @@ public class CommandService {
                     file.write(node.getElement()+" "+node.getPosition());// если эл-т последний
                 }
                 else {
-                    file.write(node.getElement()+" "+node.getPosition()+sep);
+                    file.write(node.getElement()+" "+node.getPosition());
+                    //file.write(sep);
                 }
             }
             file.close();
@@ -243,6 +243,7 @@ public class CommandService {
         }
         try {
             reader.close();
+            res=Constants.SET_SAVED;
 
         } catch (IOException e) {
             res=null;

@@ -185,9 +185,10 @@ public class CommandParser {
                 case "save":{
                     String sep;
                     String path;
+                    String savePath=s.split(" ")[1];
                     if (commandElements.length==1){
                         throw new InvalidCommandFormatException("Не указано имя файла!");
-                    } else path = commandElements[1];
+                    } else path = parsePath(savePath);//commandElements[1];
                     if (commandElements.length==2){
                         sep="\t";
                     }else sep = commandElements[2];
@@ -202,6 +203,7 @@ public class CommandParser {
                 case "load":{
                     String path;
                     String sep;
+                    String loadPath = s.split(" ")[1];
                     if (commandElements.length>3){
                         throw new InvalidCommandFormatException("Неверно указаны параетры команды load");
                     }
@@ -210,14 +212,12 @@ public class CommandParser {
                             throw new InvalidCommandFormatException("Не указано имя файла!");
                         }
                         else if (commandElements.length==2){
-                            path = commandElements[1];
-                            path = parsePath(path);
+                            path = parsePath(loadPath);
                             sep="\t";
                         }
                         else {
-                            path = commandElements[1];
                             sep=commandElements[2];
-                            path = parsePath(path);
+                            path = parsePath(loadPath);
                         }
 
                         returnMessage = commandService.loadElements(path,sep);
@@ -267,10 +267,10 @@ public class CommandParser {
     }
 
     public String parsePath(String raw){
-        String pathSeparator = File.pathSeparator;
+
         String path = raw.replace("\\s"," ");
-        //path=path.replace("\\\\", "\\"); - on windows
-        path=path.replace("\\", pathSeparator); //- unix
+        path=path.replace("\\\\", "\\");
+        //path=path.replace("\\", pathSeparator); //- unix
         return path;
     }
 }
